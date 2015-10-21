@@ -12,13 +12,8 @@ class PhotoCat(object):
     def __init__(self, args = {}):
         self.sourcedir = args.source_path
         self.destDir = args.dest_path
+        self.suffix = args.suffix
         self.organize_files()
-
-    # def create_photo_dirs(self):
-    #   os.chdir(os.environ['HOME'] + '/Pictures')
-    #   for year in range(2007, 2021):
-    #     for month in range(1, 13):
-    #       os.makedirs('iPhone/%04d/%02d' % (year, month))
 
     def photoDate(self, f):
       "Return the date/time on which the given photo was taken."
@@ -45,28 +40,33 @@ class PhotoCat(object):
         # suffixes 'a', 'b', etc. to the names. 
         for photo in photos:
           original = self.sourcedir + '/' + photo
-          suffix = 'a'
+          suffix = self.suffix
           try:
             pDate = self.photoDate(original)
             yr = pDate.year
             mo = pDate.month
-            newname = pDate.strftime(fmt)
+            newname = pDate.strftime(fmt)            
+            oldname = photo.split(".")[0]
             duplicate = self.destDir + '/%04d/%02d/%s.jpg' % (yr, mo, newname)
-            print("motherfuck")
-            newname = pDate.strftime(fmt) + suffix
+            newname = pDate.strftime(fmt) + "_" + suffix + oldname
             new_dir = '%s/%04d/%02d' % (self.destDir, yr, mo)
-            print(new_dir)
             if not os.path.exists(new_dir):
+                print("creating" + new_dir)
                 os.makedirs(new_dir)
             duplicate = self.destDir + '/%04d/%02d/%s.jpg' % (yr, mo, newname)
-            suffix = chr(ord(suffix) + 1)
             shutil.copy2(original, duplicate)
           except ValueError:
+            dir = self.destDir + "/undated/"
+            if not os.path.exists(dir):
+                os.makedirs(dir)
+            duplicate = dir + photo
+            shutil.copy2(original, duplicate)
             problems.append(photo)
 
         # Report the problem files, if any.
         if len(problems) > 0:
           print("Problem files:")
+          print("We've moved these bad boys over to undated")
           print("\n".join(problems))
 
 if __name__ == "__main__":
@@ -78,6 +78,8 @@ if __name__ == "__main__":
         help="""This is the path to the pile of images""")
     parser.add_argument('--dest_path', default=".",
         help="""This is the path to put the output images""")
+    parser.add_argument('--suffix', default="",
+        help="""This is the suffix for all destination images""")
 
     args = parser.parse_args()
     p = PhotoCat(args)
