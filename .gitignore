@@ -2,3 +2,7 @@
 # added by GitSavvy
 source/
 dest/
+*.MOV
+*.mov
+*.gif
+*.GIF
